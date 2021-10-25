@@ -119,7 +119,7 @@ function LinkControl( {
 	noURLSuggestion = false,
 	createSuggestionButtonText,
 	hasRichPreviews = false,
-	children,
+	renderControlBottom = null,
 } ) {
 	if ( withCreateSuggestion === undefined && createSuggestion ) {
 		withCreateSuggestion = true;
@@ -293,7 +293,7 @@ function LinkControl( {
 					) }
 				</div>
 			) }
-			{ children }
+			{ renderControlBottom && renderControlBottom() }
 		</div>
 	);
 }

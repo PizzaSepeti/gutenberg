@@ -717,11 +717,11 @@ export default function NavigationLinkEdit( {
 									)
 								}
 								onRemove={ removeLink }
-								children={
+								renderControlBottom={ () => (
 									<LinkControlTransforms
 										block={ thisBlock }
 									/>
-								}
+								) }
 							/>
 						</Popover>
 					) }
