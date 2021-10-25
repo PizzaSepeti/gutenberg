@@ -10,6 +10,7 @@ import { escape } from 'lodash';
 import { createBlock, switchToBlockType } from '@wordpress/blocks';
 import { useSelect, useDispatch } from '@wordpress/data';
 import {
+	Button,
 	PanelBody,
 	Popover,
 	TextControl,
@@ -22,6 +23,7 @@ import { displayShortcut, isKeyboardEvent, ENTER } from '@wordpress/keycodes';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	BlockControls,
+	BlockIcon,
 	InspectorControls,
 	RichText,
 	__experimentalLinkControl as LinkControl,
@@ -305,6 +307,7 @@ export default function NavigationLinkEdit( {
 		userCanCreatePages,
 		userCanCreatePosts,
 		thisBlock,
+		inserterItems,
 	} = useSelect(
 		( select ) => {
 			const {
@@ -316,6 +319,7 @@ export default function NavigationLinkEdit( {
 				hasSelectedInnerBlock,
 				getSelectedBlockClientId,
 				getBlockParentsByBlockName,
+				getInserterItems,
 			} = select( blockEditorStore );
 
 			const selectedBlockId = getSelectedBlockClientId();
@@ -354,6 +358,9 @@ export default function NavigationLinkEdit( {
 					'posts'
 				),
 				thisBlock: getBlock( clientId ),
+				inserterItems: getInserterItems(
+					getBlockRootClientId( clientId )
+				),
 			};
 		},
 		[ clientId ]
@@ -380,31 +387,36 @@ export default function NavigationLinkEdit( {
 		replaceBlock( clientId, newSubmenu );
 	}
 
+	const featuredBlocks = [
+		'core/site-logo',
+		'core/social-links',
+		'core/search',
+	];
+	const featuredTransforms = inserterItems.filter( ( item ) => {
+		return featuredBlocks.includes( item.name );
+	} );
 	/**
 	 * Add transforms to Link Control
 	 */
 
-	function LinkControlTransforms( block ) {
-		const featuredTransforms = [
-			'core/site-logo',
-			'core/social-links',
-			'core/search',
-		];
+	function LinkControlTransforms( { block, transforms } ) {
 		return (
 			<>
-				{ featuredTransforms.map( ( item, index ) => {
+				{ transforms.map( ( item, index ) => {
 					return (
-						<button
+						<Button
 							key={ `transform-${ index }` }
 							onClick={ () =>
 								replaceBlock(
-									clientId,
-									switchToBlockType( block, item )
+									block.clientId,
+									switchToBlockType( block, item.name )
 								)
 							}
+							className="link-control-transform__item"
 						>
-							{ item }
-						</button>
+							<BlockIcon icon={ item.icon } />
+							{ item.title }
+						</Button>
 					);
 				} ) }
 			</>
@@ -720,6 +732,7 @@ export default function NavigationLinkEdit( {
 								renderControlBottom={ () => (
 									<LinkControlTransforms
 										block={ thisBlock }
+										transforms={ featuredTransforms }
 									/>
 								) }
 							/>
