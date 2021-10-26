@@ -743,12 +743,18 @@ export default function NavigationLinkEdit( {
 									)
 								}
 								onRemove={ removeLink }
-								renderControlBottom={ () => (
-									<LinkControlTransforms
-										block={ thisBlock }
-										transforms={ featuredTransforms }
-									/>
-								) }
+								renderControlBottom={
+									! url
+										? () => (
+												<LinkControlTransforms
+													block={ thisBlock }
+													transforms={
+														featuredTransforms
+													}
+												/>
+										  )
+										: null
+								}
 							/>
 						</Popover>
 					) }
