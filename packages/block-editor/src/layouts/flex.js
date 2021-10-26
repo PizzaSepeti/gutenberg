@@ -17,11 +17,19 @@ import { appendSelectors } from './utils';
 import useSetting from '../components/use-setting';
 import { BlockControls, JustifyContentControl } from '../components';
 
+// Used with the default, horizontal flex orientation.
 const justifyContentMap = {
 	left: 'flex-start',
 	right: 'flex-end',
 	center: 'center',
 	'space-between': 'space-between',
+};
+
+// Used with the vertical (column) flex orientation.
+const alignItemsMap = {
+	left: 'flex-start',
+	right: 'flex-end',
+	center: 'center',
 };
 
 export default {
@@ -57,10 +65,22 @@ export default {
 		);
 	},
 	save: function FlexLayoutStyle( { selector, layout } ) {
+		const { orientation = 'horizontal' } = layout;
 		const blockGapSupport = useSetting( 'spacing.blockGap' );
 		const hasBlockGapStylesSupport = blockGapSupport !== null;
 		const justifyContent =
 			justifyContentMap[ layout.justifyContent ] || 'flex-start';
+		const rowOrientation = `
+		flex-direction: row;
+		align-items: center;
+		justify-content: ${ justifyContent };
+		`;
+		const alignItems =
+			alignItemsMap[ layout.justifyContent ] || 'flex-start';
+		const columnOrientation = `
+		flex-direction: column;
+		align-items: ${ alignItems };
+		`;
 		return (
 			<style>{ `
 				${ appendSelectors( selector ) } {
@@ -71,9 +91,7 @@ export default {
 							: '0.5em'
 					};
 					flex-wrap: wrap;
-					align-items: center;
-					flex-direction: row;
-					justify-content: ${ justifyContent };
+					${ orientation === 'horizontal' ? rowOrientation : columnOrientation }
 				}
 
 				${ appendSelectors( selector, '> *' ) } {
@@ -82,57 +100,35 @@ export default {
 			` }</style>
 		);
 	},
-	getOrientation() {
-		return 'horizontal';
+	getOrientation( layout ) {
+		const { orientation = 'horizontal' } = layout;
+		return orientation;
 	},
 	getAlignments() {
 		return [];
 	},
 };
 
-const justificationOptions = [
-	{
-		value: 'left',
-		icon: justifyLeft,
-		label: __( 'Justify items left' ),
-	},
-	{
-		value: 'center',
-		icon: justifyCenter,
-		label: __( 'Justify items center' ),
-	},
-	{
-		value: 'right',
-		icon: justifyRight,
-		label: __( 'Justify items right' ),
-	},
-	{
-		value: 'space-between',
-		icon: justifySpaceBetween,
-		label: __( 'Space between items' ),
-	},
-];
 function FlexLayoutJustifyContentControl( {
 	layout,
 	onChange,
 	isToolbar = false,
 } ) {
-	const { justifyContent = 'left' } = layout;
+	const { justifyContent = 'left', orientation = 'horizontal' } = layout;
 	const onJustificationChange = ( value ) => {
 		onChange( {
 			...layout,
 			justifyContent: value,
 		} );
 	};
+	const allowedControls = [ 'left', 'center', 'right' ];
+	if ( orientation === 'horizontal' ) {
+		allowedControls.push( 'space-between' );
+	}
 	if ( isToolbar ) {
 		return (
 			<JustifyContentControl
-				allowedControls={ [
-					'left',
-					'center',
-					'right',
-					'space-between',
-				] }
+				allowedControls={ allowedControls }
 				value={ justifyContent }
 				onChange={ onJustificationChange }
 				popoverProps={ {
@@ -141,6 +137,31 @@ function FlexLayoutJustifyContentControl( {
 				} }
 			/>
 		);
+	}
+
+	const justificationOptions = [
+		{
+			value: 'left',
+			icon: justifyLeft,
+			label: __( 'Justify items left' ),
+		},
+		{
+			value: 'center',
+			icon: justifyCenter,
+			label: __( 'Justify items center' ),
+		},
+		{
+			value: 'right',
+			icon: justifyRight,
+			label: __( 'Justify items right' ),
+		},
+	];
+	if ( orientation === 'horizontal' ) {
+		justificationOptions.push( {
+			value: 'space-between',
+			icon: justifySpaceBetween,
+			label: __( 'Space between items' ),
+		} );
 	}
 
 	return (
